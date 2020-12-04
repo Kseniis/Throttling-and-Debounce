@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Debouncing</title>
+    <meta name="viewport" content="width=device-width" />
+    <style></style>
+  </head>
+  <body>
+    <form autocomplete="off"  role="search">
+      <label for="search">Поиск слов</label>
+      <input
+        id="search"
+        type="search"
+        placeholder="Найти..."
+        autofocus
+        required
+        autocomplete="off"
+      />
+      <button type="submit">Найти</button>
+    </form>
+    <div>Поиск будет идти по этому запросу:</div>
+    <div id="output"></div>
+    <a href="index.html">
+        <h2>Назад</h2>
+    </a>
+
+    <script>
+
+      
+      const debounce = (fn, ms) => {
+        //замыкание
+        let timeout;
+        return function () {
+          const fnCall = () => {
+            //передает контекст текущего this и псевдомассив, в котором будут все параметры, с которыми вызвана функция (event)
+            fn.apply(this, arguments);
+          };
+          //метод для отмены setTimeout
+          clearTimeout(timeout);
+          timeout = setTimeout(fnCall, ms);
+        };
+      };
+
+      function onChange(e) {
+        var div = document.getElementById("output");
+        div.innerHTML = e.target.value;
+      }
+
+      onChange = debounce(onChange, 500);
+
+      //при каждом нажатии клавиши вызывается onChange
+      document.getElementById("search").addEventListener("keyup", onChange);
+    </script>
+  </body>
+</html>

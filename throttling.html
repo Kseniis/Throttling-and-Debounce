@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Debouncing</title>
+    <meta name="viewport" content="width=device-width" />
+    <style></style>
+  </head>
+  <body>
+    <div>Мы должны вызывать функцию myFunc с задержкой 1000 мсек, я буду искусственно вызывать функции через каждые 200 мсек <br>
+      Я вызвала функцию №1 без задержки, №2 - с задержкой 200 мсек, №3 - 400, №4 - 600, №5 - 800 и №6 - 1000 мсек <br>
+      В результате должны быть выведены по очереди функции №1, №5 и №6 (в консоле выведены все три)
+    </div>
+     <div id="myDiv"></div>
+     <a href="index.html">
+      <h2>Назад</h2>
+  </a>
+
+
+    <script>
+//мы вызываем функцию myFunc с задержкой 1000 мсек, я буду искусственно вызывать функции через каждые 200 мсек
+      
+      function throttle(fn, ms) {
+
+        //если флаг isThrottling false, мы запускаем реальную функцию, а если true, то откладываем ее на будущее (отложенный вызов - deferredCall)
+        let isThrottling = false;
+        let deferredCall = false;
+
+        let lastContent;
+        let lastArguments;
+
+
+        //код функции, отвечающей за реальный запуск
+        const realStartFunc= (content, arguments)=> {
+          fn.apply(content, arguments);
+            //чтобы все последующие вызовы игнорировались
+            isThrottling = true;
+
+            //сбрасываем флаг isThrottling через некоторый интервал времени, после последнего вызова
+            setTimeout(()=>{
+              isThrottling = false;
+
+              //после окончания задержки проверяем, нет ли отложенного вызова
+              if (deferredCall){
+                realStartFunc(lastContent, lastArguments);
+                lastContent = undefined;
+                lastArguments = undefined;
+                deferredCall = false;
+              }
+            }, ms);
+        }
+
+
+        //возвращаем функцию-обертку, которая должна запустить fn
+        return function(...arguments) {
+
+          if (!isThrottling) {
+            realStartFunc (this, arguments);
+
+          } else {
+            //isThrottling true, запоминаем агрументы и контекст игнорируемого вызова
+            deferredCall = true;
+            lastContent = this;
+            lastArguments = arguments;
+          }
+ 
+        }
+      }
+
+
+    // чтобы наглядно видно было время вызова функций
+      const startTime = Date.now();
+
+    function myFunct(payload) { 
+      //отсчет времени от старта программы
+      const timeFromStart = Date.now() - startTime;
+      console.log( timeFromStart, payload);
+      var div = document.getElementById("myDiv");
+      div.innerHTML =  [timeFromStart, payload];
+    }
+
+    //оборачиваем функцию вызовом throttle, чтобы получить "приторможенную версию функции"
+    const tmyFunct = throttle(myFunct, 1000);
+
+
+    tmyFunct(" №1");
+    setTimeout(()=> {
+      tmyFunct(" №2 is 200")
+    },200);
+    setTimeout(()=> {
+      tmyFunct(" №3 is 400")
+    },400);
+    setTimeout(()=> {
+      tmyFunct(" №4 is 600")
+    },600);
+    setTimeout(()=> {
+      tmyFunct(" №5 is 800")
+    },800);
+    setTimeout(()=> {
+      tmyFunct(" №6 is 1000")
+    },1000);
+
+    </script>
+  </body>
+</html>
